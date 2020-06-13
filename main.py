@@ -77,6 +77,7 @@ def forward_selection(alpha, target):
 
             F_table = get_f_table(alpha, df)
 
+            SSR_initial_buf = 0
             for pretindent in pretendents:
                 Model_Extra = model_full.copy()
                 Model_Extra.append(pretindent)
@@ -88,11 +89,12 @@ def forward_selection(alpha, target):
                 F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
 
                 if F_real > F_buf:
-                    SSR_initial = SSR_full
+                    SSR_initial_buf = SSR_full
                     F_buf = F_real
                     Pretend_buf = pretindent
 
             if F_buf > F_table:
+                SSR_initial = SSR_initial_buf
                 pretendents.remove(Pretend_buf)
                 model_full.append(Pretend_buf)
             else:
@@ -134,12 +136,10 @@ def Backward_Elimination(alpha, target):
             F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
 
             if F_real < F_buf or F_buf==0:
-                SSR_initial_buf = SSR_full
                 F_buf = F_real
                 Pretend_buf = pretindent
 
         if F_buf <= F_table:
-            SSR_initial = SSR_initial_buf
             model_full.remove(Pretend_buf)
         else:
             return model_full
