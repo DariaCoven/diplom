@@ -60,18 +60,19 @@ def forward_selection(alpha, target):
         model_full.append(x_extra)
 
         pretendents = []
+
         for value in data.columns.values:
             if value != target and model_full[0] != value:
                 pretendents.append(value)
 
         SSR_initial = SSR_extra
+
         while len(pretendents) != 0:
             F_buf = 0
             Pretend_buf = ""
-            # Проверка значимости при помощи F - критерия
-            n = len(data)
-            k = 1
-            alpha = 0.05
+
+            # Todo проверить правильный расчёт К на большей выборке
+            k = len(model_full)
             df = n - k - 2
 
             F_table = get_f_table(alpha, df)
@@ -82,7 +83,6 @@ def forward_selection(alpha, target):
 
                 y_pred = regression_model(Model_Extra, target)
 
-                # Игрик с домиком минус Игрик среднее
                 SSR_full = sum((y_pred - y_mean) ** 2)
 
                 F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
@@ -97,12 +97,12 @@ def forward_selection(alpha, target):
                 model_full.append(Pretend_buf)
             else:
                 break
+        return model_full
 
-        print(model_full)
 
     else:
         print('Нет значимых переменных')
 
 
 target = 'Prosrochki'
-forward_selection(alpha, target)
+print(forward_selection(alpha, target))
