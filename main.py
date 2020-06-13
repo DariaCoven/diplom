@@ -215,10 +215,6 @@ def Stepwise (alpha, target):
 
                 # ToDo Запуск исключения
 
-                #model_full = data.drop(columns=target).columns.tolist()
-                #n = len(data)
-                #y_mean = data[target].mean()
-
                 F_buf1 = 0
                 Pretend_buf1 = ""
 
@@ -251,7 +247,8 @@ def Stepwise (alpha, target):
                     model_full.remove(Pretend_buf1)
                     break
 
-                    # ToDO Конец исключения
+                # ToDO Конец исключения
+
             else:
                 break
         return model_full
