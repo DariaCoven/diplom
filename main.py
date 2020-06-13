@@ -118,6 +118,7 @@ def Backward_Elimination(alpha, target):
 
         F_table = get_f_table(alpha, df)
 
+        SSR_initial_buf = 0
         for pretindent in model_full:
 
             y_pred = regression_model(model_full, target)
@@ -133,16 +134,135 @@ def Backward_Elimination(alpha, target):
             F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
 
             if F_real < F_buf or F_buf==0:
+                SSR_initial_buf = SSR_full
                 F_buf = F_real
                 Pretend_buf = pretindent
 
         if F_buf <= F_table:
+            SSR_initial = SSR_initial_buf
             model_full.remove(Pretend_buf)
         else:
             return model_full
+
+def Stepwise (alpha, target):
+    # Переменные
+    n = len(data)
+    model_full = []
+    k = 0
+    df = n - k - 2
+
+    # Корреляция
+    corrmat = data.corr()
+
+    # Выбор самой коррелируемой входной переменной с Y
+    x_extra = corrmat[target].drop(target).map(abs).idxmax()
+
+    # Регрессионная модель с переменной x_extra
+    y_pred = regression_model([x_extra], target)
+
+    # Распределение Фишера
+    F_table = get_f_table(alpha, df)
+
+    # Сумма квадратов регрессии
+    y_mean = data[target].mean()
+    SSR_extra = sum((y_pred - y_mean) ** 2)
+
+    # Вычисление F-критерия
+    F_real = get_f_real(y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
+
+    if F_real > F_table:
+        model_full.append(x_extra)
+
+        pretendents = []
+
+        #Добавление переменные которые будем проверять
+        for value in data.columns.values:
+            if value != target and model_full[0] != value:
+                pretendents.append(value)
+
+        SSR_initial = SSR_extra
+
+        while len(pretendents) != 0:
+            F_buf = 0
+            Pretend_buf = ""
+
+            # Todo проверить правильный расчёт К на большей выборке
+            k = len(model_full)
+            df = n - k - 2
+
+            F_table = get_f_table(alpha, df)
+
+            SSR_initial_buf = 0
+            for pretindent in pretendents:
+                Model_Extra = model_full.copy()
+                Model_Extra.append(pretindent)
+
+                y_pred = regression_model(Model_Extra, target)
+
+                SSR_full = sum((y_pred - y_mean) ** 2)
+
+                F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+
+                if F_real > F_buf:
+                    SSR_initial_buf = SSR_full
+                    F_buf = F_real
+                    Pretend_buf = pretindent
+
+            if F_buf > F_table:
+                SSR_initial = SSR_initial_buf
+                pretendents.remove(Pretend_buf)
+                model_full.append(Pretend_buf)
+
+                # ToDo Запуск исключения
+
+                #model_full = data.drop(columns=target).columns.tolist()
+                #n = len(data)
+                #y_mean = data[target].mean()
+
+                F_buf1 = 0
+                Pretend_buf1 = ""
+
+                k = len(model_full)
+                df = n - k - 1
+
+                F_table = get_f_table(alpha, df)
+
+                for pretindent in model_full:
+
+                    y_pred = regression_model(model_full, target)
+
+                    SSR_full = sum((y_pred - y_mean) ** 2)
+
+                    model_initial = model_full.copy()
+                    model_initial.remove(pretindent)
+                    y_pred_initial = regression_model(model_initial, target)
+
+                    SSR_initial = sum((y_pred_initial - y_mean) ** 2)
+
+                    F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+
+
+                    if F_real < F_buf1 or F_buf1 == 0:
+                        F_buf1 = F_real
+                        Pretend_buf1 = pretindent
+
+
+                if F_buf1[0] <= F_table:
+                    model_full.remove(Pretend_buf1)
+                    break
+
+                    # ToDO Конец исключения
+            else:
+                break
+        return model_full
+
+    else:
+        print('Нет значимых переменных')
+
 
 
 target = 'Prosrochki'
 
 print(forward_selection(alpha, target))
 print(Backward_Elimination(alpha, target))
+print(Stepwise(alpha, target))
