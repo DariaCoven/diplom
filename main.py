@@ -26,7 +26,7 @@ def get_f_real(y_pred, SSR_initial, SSR_full, df):
     SSE_extra = sum((data[target].values.reshape(-1, 1) - y_pred) ** 2)
     MSE_full = SSE_extra / df
     SSR_extra = SSR_full - SSR_initial
-    F_real = (SSR_extra) / MSE_full
+    F_real = SSR_extra / MSE_full
     return F_real
 
 
@@ -104,5 +104,45 @@ def forward_selection(alpha, target):
         print('Нет значимых переменных')
 
 
+def Backward_Elimination(alpha, target):
+    model_full = data.drop(columns=target).columns.tolist()
+    n = len(data)
+    y_mean = data[target].mean()
+
+    while len(model_full)!= 0:
+        F_buf = 0
+        Pretend_buf = ""
+
+        k = len(model_full)
+        df = n - k - 1
+
+        F_table = get_f_table(alpha, df)
+
+        for pretindent in model_full:
+
+            y_pred = regression_model(model_full, target)
+
+            SSR_full = sum((y_pred - y_mean) ** 2)
+
+            model_initial = model_full.copy()
+            model_initial.remove(pretindent)
+            y_pred_initial = regression_model(model_initial, target)
+
+            SSR_initial = sum((y_pred_initial - y_mean) ** 2)
+
+            F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+
+            if F_real < F_buf or F_buf==0:
+                F_buf = F_real
+                Pretend_buf = pretindent
+
+        if F_buf <= F_table:
+            model_full.remove(Pretend_buf)
+        else:
+            return model_full
+
+
 target = 'Prosrochki'
+
 print(forward_selection(alpha, target))
+print(Backward_Elimination(alpha, target))
