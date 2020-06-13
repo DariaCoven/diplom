@@ -22,6 +22,14 @@ def get_f_table(alpha, df):
     return stats.f.ppf(1 - alpha, 1, df)
 
 
+def get_f_real(y_pred, SSR_initial, SSR_full, df):
+    SSE_extra = sum((data[target].values.reshape(-1, 1) - y_pred) ** 2)
+    MSE_full = SSE_extra / df
+    SSR_extra = SSR_full - SSR_initial
+    F_real = (SSR_extra) / MSE_full
+    return F_real
+
+
 def forward_selection(alpha, target):
     # Переменные
     n = len(data)
@@ -45,10 +53,8 @@ def forward_selection(alpha, target):
     y_mean = data[target].mean()
     SSR_extra = sum((y_pred - y_mean) ** 2)
 
-    # Гамма статистика
-    SSE_extra = sum((data[target].values.reshape(-1, 1) - y_pred) ** 2)
-    MSE_full = SSE_extra / df
-    F_real = SSR_extra / MSE_full
+    # Вычисление F-критерия
+    F_real = get_f_real(y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
 
     if F_real > F_table:
         model_full.append(x_extra)
@@ -67,6 +73,7 @@ def forward_selection(alpha, target):
             k = 1
             alpha = 0.05
             df = n - k - 2
+
             F_table = get_f_table(alpha, df)
 
             for pretindent in pretendents:
@@ -76,15 +83,9 @@ def forward_selection(alpha, target):
                 y_pred = regression_model(Model_Extra, target)
 
                 # Игрик с домиком минус Игрик среднее
-                y_mean = data[target].mean()
                 SSR_full = sum((y_pred - y_mean) ** 2)
 
-                # Гамма статистика
-                SSE_extra = sum((data[target].values.reshape(-1, 1) - y_pred) ** 2)
-
-                MSE_full = SSE_extra / df
-                SSR_extra = SSR_full - SSR_initial
-                F_real = (SSR_extra) / MSE_full
+                F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
 
                 if F_real > F_buf:
                     SSR_initial = SSR_full
