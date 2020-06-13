@@ -9,12 +9,17 @@ data = pd.read_csv('Тест2.csv',
 
 alpha = 0.05
 
+
 def regression_model(train_model, target):
     linmodel = LinearRegression()
     fittedModel = data[train_model].values.reshape(-1, len(train_model))
     linmodel.fit(fittedModel, data[target].values.reshape(-1, 1))
     y_pred = linmodel.predict(data[train_model].values.reshape(-1, len(train_model)))
     return y_pred
+
+
+def get_f_table(alpha, df):
+    return stats.f.ppf(1 - alpha, 1, df)
 
 
 def forward_selection(alpha, target):
@@ -34,7 +39,7 @@ def forward_selection(alpha, target):
     y_pred = regression_model([x_extra], target)
 
     # Распределение Фишера
-    F_table = stats.f.ppf(1 - alpha, 1, df)
+    F_table = get_f_table(alpha, df)
 
     # Сумма квадратов регрессии
     y_mean = data[target].mean()
@@ -62,7 +67,7 @@ def forward_selection(alpha, target):
             k = 1
             alpha = 0.05
             df = n - k - 2
-            F_table = stats.f.ppf(1 - alpha, 1, df)
+            F_table = get_f_table(alpha, df)
 
             for pretindent in pretendents:
                 Model_Extra = model_full.copy()
