@@ -100,10 +100,9 @@ def forward_selection(alpha, target):
             else:
                 break
         return model_full
-
-
     else:
         print('Нет значимых переменных')
+        return []
 
 
 def Backward_Elimination(alpha, target):
@@ -112,6 +111,7 @@ def Backward_Elimination(alpha, target):
     y_mean = data[target].mean()
 
     while len(model_full)!= 0:
+
         F_buf = 0
         Pretend_buf = ""
 
@@ -129,9 +129,12 @@ def Backward_Elimination(alpha, target):
 
             model_initial = model_full.copy()
             model_initial.remove(pretindent)
-            y_pred_initial = regression_model(model_initial, target)
 
-            SSR_initial = sum((y_pred_initial - y_mean) ** 2)
+            if len(model_initial) == 0:
+                SSR_initial = 0
+            else:
+                y_pred_initial = regression_model(model_initial, target)
+                SSR_initial = sum((y_pred_initial - y_mean) ** 2)
 
             F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
 
@@ -143,6 +146,8 @@ def Backward_Elimination(alpha, target):
             model_full.remove(Pretend_buf)
         else:
             return model_full
+    print('Нет значимых переменных')
+    return []
 
 def Stepwise (alpha, target):
     # Переменные
@@ -255,10 +260,11 @@ def Stepwise (alpha, target):
 
     else:
         print('Нет значимых переменных')
+        return []
 
 
 
-target = 'Prosrochki'
+target = 'Stazh'
 
 print(forward_selection(alpha, target))
 print(Backward_Elimination(alpha, target))
