@@ -4,13 +4,12 @@ import scipy.stats as stats
 from sklearn.linear_model import LinearRegression
 
 # Загрузка данных
-data = pd.read_csv('Тест2.csv',
-                   sep=';', encoding='windows-1251')
+# data = pd.read_csv('Тест2.csv', sep=';', encoding='windows-1251')
 
 alpha = 0.05
 
 
-def regression_model(train_model, target):
+def regression_model(train_model, data, target):
     linmodel = LinearRegression()
     fittedModel = data[train_model].values.reshape(-1, len(train_model))
     linmodel.fit(fittedModel, data[target].values.reshape(-1, 1))
@@ -22,7 +21,7 @@ def get_f_table(alpha, df):
     return stats.f.ppf(1 - alpha, 1, df)
 
 
-def get_f_real(y_pred, SSR_initial, SSR_full, df):
+def get_f_real(data, target, y_pred, SSR_initial, SSR_full, df):
     SSE_extra = sum((data[target].values.reshape(-1, 1) - y_pred) ** 2)
     MSE_full = SSE_extra / df
     SSR_extra = SSR_full - SSR_initial
@@ -30,7 +29,7 @@ def get_f_real(y_pred, SSR_initial, SSR_full, df):
     return F_real
 
 
-def forward_selection(alpha, target):
+def forward_selection(alpha, data, target):
     # Переменные
     n = len(data)
     model_full = []
@@ -44,7 +43,7 @@ def forward_selection(alpha, target):
     x_extra = corrmat[target].drop(target).map(abs).idxmax()
 
     # Регрессионная модель с переменной x_extra
-    y_pred = regression_model([x_extra], target)
+    y_pred = regression_model([x_extra], data, target)
 
     # Распределение Фишера
     F_table = get_f_table(alpha, df)
@@ -54,7 +53,7 @@ def forward_selection(alpha, target):
     SSR_extra = sum((y_pred - y_mean) ** 2)
 
     # Вычисление F-критерия
-    F_real = get_f_real(y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
+    F_real = get_f_real(data, target, y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
 
     if F_real > F_table:
         model_full.append(x_extra)
@@ -82,11 +81,11 @@ def forward_selection(alpha, target):
                 Model_Extra = model_full.copy()
                 Model_Extra.append(pretindent)
 
-                y_pred = regression_model(Model_Extra, target)
+                y_pred = regression_model(Model_Extra, data, target)
 
                 SSR_full = sum((y_pred - y_mean) ** 2)
 
-                F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+                F_real = get_f_real(data, target, y_pred, SSR_initial, SSR_full, df)
 
                 if F_real > F_buf:
                     SSR_initial_buf = SSR_full
@@ -105,13 +104,12 @@ def forward_selection(alpha, target):
         return []
 
 
-def Backward_Elimination(alpha, target):
+def Backward_Elimination(alpha, data, target):
     model_full = data.drop(columns=target).columns.tolist()
     n = len(data)
     y_mean = data[target].mean()
 
-    while len(model_full)!= 0:
-
+    while len(model_full) != 0:
         F_buf = 0
         Pretend_buf = ""
 
@@ -120,10 +118,9 @@ def Backward_Elimination(alpha, target):
 
         F_table = get_f_table(alpha, df)
 
-        SSR_initial_buf = 0
         for pretindent in model_full:
 
-            y_pred = regression_model(model_full, target)
+            y_pred = regression_model(model_full, data, target)
 
             SSR_full = sum((y_pred - y_mean) ** 2)
 
@@ -133,12 +130,12 @@ def Backward_Elimination(alpha, target):
             if len(model_initial) == 0:
                 SSR_initial = 0
             else:
-                y_pred_initial = regression_model(model_initial, target)
+                y_pred_initial = regression_model(model_initial, data, target)
                 SSR_initial = sum((y_pred_initial - y_mean) ** 2)
 
-            F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+            F_real = get_f_real(data, target, y_pred, SSR_initial, SSR_full, df)
 
-            if F_real < F_buf or F_buf==0:
+            if F_real < F_buf or F_buf == 0:
                 F_buf = F_real
                 Pretend_buf = pretindent
 
@@ -149,7 +146,8 @@ def Backward_Elimination(alpha, target):
     print('Нет значимых переменных')
     return []
 
-def Stepwise (alpha, target):
+
+def Stepwise(alpha, data, target):
     # Переменные
     n = len(data)
     model_full = []
@@ -163,7 +161,7 @@ def Stepwise (alpha, target):
     x_extra = corrmat[target].drop(target).map(abs).idxmax()
 
     # Регрессионная модель с переменной x_extra
-    y_pred = regression_model([x_extra], target)
+    y_pred = regression_model([x_extra], data, target)
 
     # Распределение Фишера
     F_table = get_f_table(alpha, df)
@@ -173,14 +171,14 @@ def Stepwise (alpha, target):
     SSR_extra = sum((y_pred - y_mean) ** 2)
 
     # Вычисление F-критерия
-    F_real = get_f_real(y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
+    F_real = get_f_real(data, target, y_pred, SSR_initial=0, SSR_full=SSR_extra, df=df)
 
     if F_real > F_table:
         model_full.append(x_extra)
 
         pretendents = []
 
-        #Добавление переменные которые будем проверять
+        # Добавление переменные которые будем проверять
         for value in data.columns.values:
             if value != target and model_full[0] != value:
                 pretendents.append(value)
@@ -202,11 +200,11 @@ def Stepwise (alpha, target):
                 Model_Extra = model_full.copy()
                 Model_Extra.append(pretindent)
 
-                y_pred = regression_model(Model_Extra, target)
+                y_pred = regression_model(Model_Extra, data, target)
 
                 SSR_full = sum((y_pred - y_mean) ** 2)
 
-                F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
+                F_real = get_f_real(data, target, y_pred, SSR_initial, SSR_full, df)
 
                 if F_real > F_buf:
                     SSR_initial_buf = SSR_full
@@ -230,23 +228,21 @@ def Stepwise (alpha, target):
 
                 for pretindent in model_full:
 
-                    y_pred = regression_model(model_full, target)
+                    y_pred = regression_model(model_full, data, target)
 
                     SSR_full = sum((y_pred - y_mean) ** 2)
 
                     model_initial = model_full.copy()
                     model_initial.remove(pretindent)
-                    y_pred_initial = regression_model(model_initial, target)
+                    y_pred_initial = regression_model(model_initial, data, target)
 
                     SSR_initial = sum((y_pred_initial - y_mean) ** 2)
 
-                    F_real = get_f_real(y_pred, SSR_initial, SSR_full, df)
-
+                    F_real = get_f_real(data, target, y_pred, SSR_initial, SSR_full, df)
 
                     if F_real < F_buf1 or F_buf1 == 0:
                         F_buf1 = F_real
                         Pretend_buf1 = pretindent
-
 
                 if F_buf1[0] <= F_table:
                     model_full.remove(Pretend_buf1)
@@ -262,10 +258,8 @@ def Stepwise (alpha, target):
         print('Нет значимых переменных')
         return []
 
-
-
-target = 'Stazh'
-
-print(forward_selection(alpha, target))
-print(Backward_Elimination(alpha, target))
-print(Stepwise(alpha, target))
+# target = 'Stazh'
+#
+# print(forward_selection(alpha, data, target))
+# print(Backward_Elimination(alpha, data, target))
+# print(Stepwise(alpha, data, target))
