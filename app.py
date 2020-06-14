@@ -45,7 +45,6 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.set_values_for_combo_box_from_dict(self.cb_algorithm, self.CHOICES_FOR_ALGORITHM)
-        self.set_values_for_combo_box_from_list(self.cb_regressor_type, self.REGRESSOR_TYPES)
         self.set_values_for_combo_box_from_list(self.cb_alpha, self.ALPHA_NUMBERS)
 
         self.pb_build_model.setEnabled(False)
@@ -134,7 +133,6 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             'target_variable': target_variable,
             'results': results,
             'algorithm': self.cb_algorithm.currentText(),
-            'regressor_type': self.cb_regressor_type.currentText()
         }
         self.action_export.setEnabled(True)
 
