@@ -10,15 +10,16 @@ from matplotlib.pyplot import savefig
 import main_window
 import utils
 from generation_regressors import x_exp, x_log, x_pow
-from main import forward_selection, Backward_Elimination, Stepwise
+from main import forward_selection, Backward_Elimination, Stepwise, regression_model_fit
 
 
 class MplCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+
+        super(MplCanvas, self).__init__(self.fig)
 
 
 class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
@@ -147,6 +148,12 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             generatedData = generatedData.join(data_x_exp)
 
         results = func(alpha, generatedData, target_variable)
+
+        # Построение регрессии
+        linmodel = regression_model_fit(results, generatedData, target_variable)
+        y_pred = linmodel.predict(generatedData[results].values.reshape(-1, len(results)))
+        self.sc.axes.scatter(generatedData[target_variable], y_pred)
+        self.sc.axes.plot([0, 1 , 2, 3, 4, 5], [0, 1 , 2, 3, 4, 5] )
 
         if results:
             self.set_values_for_list_view(self.lw_results, results)
