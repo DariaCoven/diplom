@@ -9,6 +9,7 @@ from matplotlib.pyplot import savefig
 
 import main_window
 import utils
+from generation_regressors import x_exp, x_log, x_pow
 from main import forward_selection, Backward_Elimination, Stepwise
 
 
@@ -68,7 +69,7 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         filename = self.show_save_file_dialog()[0]
         if not filename:
             return
-        
+
         image_filename = f'{filename.split(".")[0]}.png'
         data = {
             **self.last_resolve,
@@ -123,7 +124,29 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         alpha = float(self.cb_alpha.currentText())
         target_variable = self.cb_target_variable.currentText()
 
-        results = func(alpha, self.data, target_variable)
+        # Генерация регрессоров
+        print(target_variable)
+        oldRegressors = self.data.copy().drop(target_variable, 1)
+        generatedData = self.data.copy()
+
+        if self.cb_x2.isChecked():
+            data_x_square = x_pow(oldRegressors, 2)
+            print(data_x_square)
+            generatedData = generatedData.join(data_x_square)
+
+        if self.cb_1x.isChecked():
+            data_x_cub = x_pow(oldRegressors, 3)
+            generatedData = generatedData.join(data_x_cub)
+
+        if self.cb_lnx.isChecked():
+            data_x_log = x_log(oldRegressors)
+            generatedData = generatedData.join(data_x_log)
+
+        if self.cb_ex.isChecked():
+            data_x_exp = x_exp(oldRegressors)
+            generatedData = generatedData.join(data_x_exp)
+
+        results = func(alpha, generatedData, target_variable)
 
         if results:
             self.set_values_for_list_view(self.lw_results, results)
