@@ -9,7 +9,7 @@ from matplotlib.pyplot import savefig
 
 import main_window
 import utils
-from generation_regressors import x_exp, x_log, x_pow
+from generation_regressors import stepen_x, x_log, x_pow
 from main import forward_selection, Backward_Elimination, Stepwise, regression_model_fit
 
 
@@ -144,19 +144,21 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             generatedData = generatedData.join(data_x_log)
 
         if self.cb_ex.isChecked():
-            data_x_exp = x_exp(oldRegressors)
+            data_x_exp = stepen_x(oldRegressors)
             generatedData = generatedData.join(data_x_exp)
 
         results = func(alpha, generatedData, target_variable)
 
         # Построение регрессии
-        linmodel = regression_model_fit(results, generatedData, target_variable)
-        y_pred = linmodel.predict(generatedData[results].values.reshape(-1, len(results)))
-        self.sc.axes.scatter(generatedData[target_variable], y_pred)
-        self.sc.axes.plot([0, 1 , 2, 3, 4, 5], [0, 1 , 2, 3, 4, 5] )
-
         if results:
+            linmodel = regression_model_fit(results, generatedData, target_variable)
+            y_pred = linmodel.predict(generatedData[results].values.reshape(-1, len(results)))
+            self.sc.axes.scatter(generatedData[target_variable], y_pred)
+            self.sc.axes.plot([0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5])
+
             self.set_values_for_list_view(self.lw_results, results)
+        else:
+            self.set_values_for_list_view(self.lw_results, ['Нет значимых переменных'])
 
         self.last_resolve = {
             'alpha': alpha,
