@@ -1,11 +1,15 @@
 import sys
 
 import pandas as pd
+import statsmodels.api as sm
 from PyQt5 import QtWidgets
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                                 NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from matplotlib.pyplot import savefig
+
+from scipy.stats import linregress
+from scipy.stats.mstats import zscore
 
 import main_window
 import utils
@@ -153,6 +157,40 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         if results:
             linmodel = regression_model_fit(results, generatedData, target_variable)
             y_pred = linmodel.predict(generatedData[results].values.reshape(-1, len(results)))
+
+            # Результаты регрессионного анализа
+            factors_metrics = {}
+
+            factors_metrics['R^2'] = linmodel.score(
+                generatedData[results].values.reshape(-1, len(results)),
+                generatedData[target_variable].values.reshape(-1, 1)
+            )
+
+            factors_metrics['regression_a0'] = linmodel.intercept_[0]
+
+            # Регрессия из либы
+            X = generatedData[results]
+            Y = generatedData[target_variable]
+            X = sm.add_constant(X)
+
+            model = sm.OLS(Y, X).fit()
+
+            print(model.summary())
+
+            print(model.rsquared)
+
+
+            print(linmodel.coef_)
+
+            for num, regressor in enumerate(results):
+                factors_metrics[regressor] = (
+                    {'b-coef': 1},
+                    {'regression_coef': linmodel.coef_[0][num]},
+                    {'corr_with_y': generatedData.corr()[regressor][target_variable]}
+                )
+
+            print(factors_metrics)
+
             self.sc.axes.scatter(generatedData[target_variable], y_pred)
             self.sc.axes.plot([0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5])
 
