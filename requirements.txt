@@ -5,3 +5,5 @@ scikit-learn
 pyqt5
 matplotlib
 statsmodels
+openpyxl
+pillow

@@ -1,3 +1,4 @@
+import io
 import sys
 from typing import List
 
@@ -73,18 +74,16 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.sc.draw()
 
     def export_data(self):
-        filename = self.show_save_file_dialog()[0]
+        filename = self.show_save_file_dialog(filter='*.xlsx')[0]
         if not filename:
             return
-
-        image_filename = f'{filename.split(".")[0]}.png'
-        data = {
-            **self.last_resolve,
-            'graphic': image_filename
-        }
-
-        utils.save_to_file(filename, data)
-        self.sc.print_png(image_filename)
+        excel_builder = utils.ExcelBuilder()
+        excel_builder.add_table(['Заголовок 1'], [['Строка 1'], ['Строка 2']])
+        excel_builder.add_table(['Тест 2', 'Тест 22'], [['Test 11', 'TEST22'], ['TEST!11', 'TEST22']])
+        buf = io.BytesIO()
+        self.sc.fig.savefig(buf, format='png')
+        excel_builder.add_image(buf)
+        excel_builder.save(filename)
 
     def load_data_from_csv_file(self) -> None:
         filename = self.show_file_dialog(filter='*.csv')
@@ -106,8 +105,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть файл', **kwargs)[0]
         return filename
 
-    def show_save_file_dialog(self):
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Выберите файл', filter='*.json')
+    def show_save_file_dialog(self, **kwargs):
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Выберите файл', **kwargs)
         return filename
 
     # noinspection PyMethodMayBeStatic
