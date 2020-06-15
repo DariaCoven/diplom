@@ -4,3 +4,4 @@ scipy
 scikit-learn
 pyqt5
 matplotlib
+statsmodels

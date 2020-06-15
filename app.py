@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 import pandas as pd
 import statsmodels.api as sm
@@ -6,10 +7,6 @@ from PyQt5 import QtWidgets
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                                 NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
-from matplotlib.pyplot import savefig
-
-from scipy.stats import linregress
-from scipy.stats.mstats import zscore
 
 import main_window
 import utils
@@ -55,6 +52,7 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
         self.pb_build_model.setEnabled(False)
         self.pb_build_model.clicked.connect(self.build_model)
+        self.pb_clear_graph.clicked.connect(self.clear_graphics)
 
         self.action_open_file.triggered.connect(self.load_data_from_csv_file)
         self.action_export.triggered.connect(self.export_data)
@@ -69,6 +67,10 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         toolbar = NavigationToolbar(self.sc, self)
         self.vl_graph.addWidget(toolbar)
         # Окончание построение графика
+
+    def clear_graphics(self):
+        self.sc.axes.clear()
+        self.sc.draw()
 
     def export_data(self):
         filename = self.show_save_file_dialog()[0]
@@ -179,7 +181,6 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
             print(model.rsquared)
 
-
             print(linmodel.coef_)
 
             for num, regressor in enumerate(results):
@@ -193,6 +194,7 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
             self.sc.axes.scatter(generatedData[target_variable], y_pred)
             self.sc.axes.plot([0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5])
+            self.sc.draw()
 
             self.set_values_for_list_view(self.lw_results, results)
         else:
@@ -206,8 +208,23 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         }
         self.action_export.setEnabled(True)
 
+        self.writing_table(self.table_1,
+                           headers=['Заголовок 1', 'Заголовок 2', 'Заголовок 3', 'Заголовок 4'],
+                           rows=[['1 1', '1 2'], ['2 1', '2 2']])
+
     def get_function_on_type(self, func_type: int):
         return self.FUNC_MAP[func_type]
+
+    # noinspection PyMethodMayBeStatic
+    def writing_table(self, table: QtWidgets.QTableWidget, headers: list, rows: List[list]):
+        table.clear()
+        table.setColumnCount(len(headers))
+        table.setRowCount(len(rows))
+
+        table.setHorizontalHeaderLabels(headers)
+        for i, row in enumerate(rows):
+            for j, column in enumerate(row):
+                table.setItem(i, j, QtWidgets.QTableWidgetItem(column))
 
 
 if __name__ == '__main__':
