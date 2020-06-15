@@ -8,6 +8,7 @@ from PyQt5 import QtWidgets
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                                 NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+from statsmodels.regression.linear_model import RegressionResults
 
 import main_window
 import utils
@@ -69,6 +70,9 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.vl_graph.addWidget(toolbar)
         # Окончание построение графика
 
+        self.quality_data = None
+        self.params_data = None
+
     def clear_graphics(self):
         self.sc.axes.clear()
         self.sc.draw()
@@ -78,8 +82,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         if not filename:
             return
         excel_builder = utils.ExcelBuilder()
-        excel_builder.add_table(['Заголовок 1'], [['Строка 1'], ['Строка 2']])
-        excel_builder.add_table(['Тест 2', 'Тест 22'], [['Test 11', 'TEST22'], ['TEST!11', 'TEST22']])
+        excel_builder.add_table(self.params_data[0], self.params_data[1])
+        excel_builder.add_table(['Название', 'Значение'], self.quality_data)
         buf = io.BytesIO()
         self.sc.fig.savefig(buf, format='png')
         excel_builder.add_image(buf)
@@ -184,9 +188,10 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
             for num, regressor in enumerate(results):
                 factors_metrics[regressor] = (
-                    {'b-coef': 1},
-                    {'regression_coef': linmodel.coef_[0][num]},
-                    {'corr_with_y': generatedData.corr()[regressor][target_variable]}
+                    {'b-coef': 1,
+                     'regression_coef': linmodel.coef_[0][num],
+                     'corr_with_y': generatedData.corr()[regressor][target_variable],
+                     }
                 )
 
             print(factors_metrics)
@@ -196,6 +201,17 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             self.sc.draw()
 
             self.set_values_for_list_view(self.lw_results, results)
+
+            quality_data = self.build_quality_table(model)
+            self.writing_table(self.table_2,
+                               headers=['Название', 'Значение'],
+                               rows=quality_data)
+            params_data = self.build_results_analyze(model, factors_metrics)
+            self.writing_table(self.table_1, params_data[0], params_data[1])
+
+            self.quality_data = quality_data
+            self.params_data = params_data
+
         else:
             self.set_values_for_list_view(self.lw_results, ['Нет значимых переменных'])
 
@@ -207,12 +223,33 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         }
         self.action_export.setEnabled(True)
 
-        self.writing_table(self.table_1,
-                           headers=['Заголовок 1', 'Заголовок 2', 'Заголовок 3', 'Заголовок 4'],
-                           rows=[['1 1', '1 2'], ['2 1', '2 2']])
-
     def get_function_on_type(self, func_type: int):
         return self.FUNC_MAP[func_type]
+
+    # noinspection PyMethodMayBeStatic
+    def build_quality_table(self, model: RegressionResults):
+        rows = [
+            ['Коэффицент детерминации', model.rsquared],
+            ['F статистика', model.fvalue],
+            ['Число степеней свободы', model.df_model]
+        ]
+        return rows
+
+    # noinspection PyMethodMayBeStatic
+    def build_results_analyze(self, model: RegressionResults, metrics: dict):
+        headers = ['Факторы', 'Коэффициент регрессии', 't-критерий', 'P>|t|', 'Корреляция с Y']
+        rows = []
+        for i in range(len(model.params)):
+            regressor = model.params.axes[0].values[i]
+            rows.append([
+                regressor,
+                model.params[i],
+                model.tvalues[i],
+                model.pvalues[i],
+                metrics[regressor]['corr_with_y'] if regressor != 'const' else '-',
+
+            ])
+        return headers, rows
 
     # noinspection PyMethodMayBeStatic
     def writing_table(self, table: QtWidgets.QTableWidget, headers: list, rows: List[list]):
@@ -223,7 +260,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         table.setHorizontalHeaderLabels(headers)
         for i, row in enumerate(rows):
             for j, column in enumerate(row):
-                table.setItem(i, j, QtWidgets.QTableWidgetItem(column))
+                table.setItem(i, j, QtWidgets.QTableWidgetItem(str(column)))
+        table.resizeRowsToContents()
 
 
 if __name__ == '__main__':

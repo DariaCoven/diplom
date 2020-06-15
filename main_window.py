@@ -48,6 +48,9 @@ class Ui_MainWindow(object):
         self.table_2.setObjectName("table_2")
         self.table_2.setColumnCount(0)
         self.table_2.setRowCount(0)
+        self.table_2.horizontalHeader().setCascadingSectionResizes(False)
+        self.table_2.horizontalHeader().setStretchLastSection(True)
+        self.table_2.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_4.addWidget(self.table_2)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
@@ -207,8 +210,8 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_6.setText(_translate("MainWindow", "Таблица №1"))
-        self.label_7.setText(_translate("MainWindow", "Таблица №2"))
+        self.label_6.setText(_translate("MainWindow", "Результаты регрессионного анализа"))
+        self.label_7.setText(_translate("MainWindow", "Качество модели"))
         self.pb_clear_graph.setText(_translate("MainWindow", "Очистить"))
         self.label_3.setText(_translate("MainWindow", "Набор регрессоров"))
         self.label.setText(_translate("MainWindow", "Целевая переменная"))
