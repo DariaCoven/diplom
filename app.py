@@ -77,6 +77,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
     def clear_graphics(self):
         self.sc.axes.clear()
+        self.sc.axes.set_xlabel('Y прогноз')
+        self.sc.axes.set_ylabel('Y наблюдение')
         self.sc.draw()
 
     def export_data(self):
