@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import statsmodels.api as sm
 from PyQt5 import QtWidgets
+from matplotlib import mlab
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                                 NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
@@ -21,6 +22,8 @@ class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        self.axes.set_xlabel('Y прогноз')
+        self.axes.set_ylabel('Y наблюдение')
 
         super(MplCanvas, self).__init__(self.fig)
 
@@ -196,8 +199,19 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
             print(factors_metrics)
 
+            if max(y_pred) > max(generatedData[target_variable]):
+                xmax = max(y_pred)
+            else:
+                xmax = max(generatedData[target_variable])
+
+            if min(y_pred) < min(generatedData[target_variable]):
+                xmin = min(y_pred)
+            else:
+                xmin = min(generatedData[target_variable])
+
             self.sc.axes.scatter(generatedData[target_variable], y_pred)
-            self.sc.axes.plot([0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5])
+            self.sc.axes.plot([xmin, xmax], [xmin, xmax])
+
             self.sc.draw()
 
             self.set_values_for_list_view(self.lw_results, results)
