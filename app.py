@@ -244,8 +244,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     # noinspection PyMethodMayBeStatic
     def build_quality_table(self, model: RegressionResults):
         rows = [
-            ['Коэффицент детерминации', model.rsquared],
-            ['F статистика', model.fvalue],
+            ['Коэффицент детерминации', "{:.4f}".format(model.rsquared)],
+            ['F статистика', "{:.4f}".format(model.fvalue)],
             ['Число степеней свободы', model.df_model]
         ]
         return rows
@@ -258,10 +258,10 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             regressor = model.params.axes[0].values[i]
             rows.append([
                 regressor,
-                model.params[i],
-                model.tvalues[i],
-                model.pvalues[i],
-                metrics[regressor]['corr_with_y'] if regressor != 'const' else '-',
+                "{:.4f}".format(model.params[i]),
+                "{:.4f}".format(model.tvalues[i]),
+                "{:.4f}".format(model.pvalues[i]),
+                "{:.4f}".format(metrics[regressor]['corr_with_y']) if regressor != 'const' else '-',
 
             ])
         return headers, rows
