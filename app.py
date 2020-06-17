@@ -210,6 +210,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             else:
                 xmin = min(generatedData[target_variable])
 
+            generatedData.to_csv(r'generated_data.csv', index=False)
+
             self.sc.axes.scatter(generatedData[target_variable], y_pred)
             self.sc.axes.plot([xmin, xmax], [xmin, xmax])
 
