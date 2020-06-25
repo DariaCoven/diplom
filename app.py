@@ -21,8 +21,8 @@ class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-        self.axes.set_xlabel('Y прогноз')
-        self.axes.set_ylabel('Y наблюдение')
+        self.axes.set_xlabel('Y наблюдение')
+        self.axes.set_ylabel('Y прогноз')
 
         super(MplCanvas, self).__init__(self.fig)
 
@@ -40,7 +40,7 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
     REGRESSOR_TYPES = ['x^2']
 
-    ALPHA_NUMBERS = ['0.01', '0.05']
+    ALPHA_NUMBERS = ['0.001', '0.01', '0.05']
 
     FUNC_MAP = {
         DIRECT: forward_selection,
@@ -77,8 +77,8 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
     def clear_graphics(self):
         self.sc.axes.clear()
-        self.sc.axes.set_xlabel('Y прогноз')
-        self.sc.axes.set_ylabel('Y наблюдение')
+        self.sc.axes.set_xlabel('Y наблюдение')
+        self.sc.axes.set_ylabel('Y прогноз')
         self.sc.draw()
 
     def export_data(self):
@@ -210,9 +210,9 @@ class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
             else:
                 xmin = min(generatedData[target_variable])
 
-            generatedData.to_csv(r'generated_data.csv', index=False)
+            generatedData.to_csv(r'generated_data.csv', index=False, sep = ";")
 
-            self.sc.axes.scatter(generatedData[target_variable], y_pred)
+            self.sc.axes.scatter(generatedData[target_variable], y_pred, s = 7)
             self.sc.axes.plot([xmin, xmax], [xmin, xmax])
 
             self.sc.draw()

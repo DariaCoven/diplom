@@ -6,8 +6,6 @@ from sklearn.linear_model import LinearRegression
 # Загрузка данных
 # data = pd.read_csv('Тест2.csv', sep=';', encoding='windows-1251')
 
-alpha = 0.05
-
 
 def regression_model(train_model, data, target):
     linmodel = LinearRegression()
